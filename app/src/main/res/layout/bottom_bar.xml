@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fw_tab_bar"
+    android:layout_width="fill_parent"
+    android:layout_height="@dimen/bottom_bar_height"
+    android:layout_alignParentBottom="true"
+    android:background="@drawable/bg_tab"
+    android:baselineAligned="false"
+    android:gravity="center"
+    android:paddingBottom="3.0dip"
+    android:paddingTop="3.0dip">
+
+    <RelativeLayout
+        android:id="@+id/tab_listen"
+        android:layout_width="0.0dip"
+        android:layout_height="fill_parent"
+        android:layout_weight="1.0"
+        android:gravity="center">
+
+        <CheckedTextView
+            android:id="@+id/ct_listen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2.0dip"
+            android:checked="true"
+            android:gravity="center"
+            android:text="ListenTester"
+            android:textColor="@drawable/tab_text_color_selector"
+            android:textSize="@dimen/text_size" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/tab_connect"
+        android:layout_width="0.0dip"
+        android:layout_height="fill_parent"
+        android:layout_weight="1.0"
+        android:gravity="center">
+
+        <CheckedTextView
+            android:id="@+id/ct_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2.0dip"
+            android:gravity="center"
+            android:text="ConnectTester"
+            android:textAlignment="center"
+            android:textColor="@drawable/tab_text_color_selector"
+            android:textSize="@dimen/text_size" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/tab_rwtester"
+        android:layout_width="0.0dip"
+        android:layout_height="fill_parent"
+        android:layout_weight="1.0"
+        android:gravity="center">
+
+        <CheckedTextView
+            android:id="@+id/ct_rwtester"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="RWTester"
+            android:textAlignment="center"
+            android:textColor="@drawable/tab_text_color_selector"
+            android:textSize="@dimen/text_size" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/tab_rwtester1"
+        android:layout_width="0.0dip"
+        android:layout_height="fill_parent"
+        android:layout_weight="1.0"
+        android:gravity="center">
+
+        <CheckedTextView
+            android:id="@+id/ct_rwtester1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="RWTester1"
+            android:textAlignment="center"
+            android:textColor="@drawable/tab_text_color_selector"
+            android:textSize="@dimen/text_size" />
+
+    </RelativeLayout>
+</LinearLayout>

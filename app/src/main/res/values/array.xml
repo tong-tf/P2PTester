@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="plantes">
+        <item>Lan Off,P2P then Relay</item>
+        <item>Lan On,P2P then Relay</item>
+        <item>Lan Off,Relay Only</item>
+        <item>Lan On,then Relay</item>
+        <item>NetworkDetect Only</item>
+        <item>For Wakeup device</item>
+        <item>Lan Off,force Server Relay</item>
+        <item>Three Thread Mode(LAN,P2P,RLY)</item>
+    </string-array>
+
+
+    <string-array name="modes">
+        <item>ft_Test</item>
+        <item>RW_Test</item>
+        <item>pkt_Test</item>
+
+    </string-array>
+</resources>

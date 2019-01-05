@@ -1,0 +1,353 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Connection Tester"
+            android:textColor="@color/gray"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tx_base"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:drawableLeft="@drawable/arrow_down"
+        android:drawablePadding="10dp"
+        android:paddingLeft="10dp"
+        android:text="基本信息:" />
+
+    <LinearLayout
+        android:id="@+id/layout_base"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:gravity="bottom"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/TextDID"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center"
+                android:text="DID："
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+
+            <TextView
+                android:id="@+id/textMode"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="Mode:"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+
+            <TextView
+                android:id="@+id/textInit"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="InitString:"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+
+            <TextView
+                android:id="@+id/textCount"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="连线次数:"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+
+            <TextView
+                android:id="@+id/textDelay"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="间隔时间:"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/edit_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg">
+
+                <EditText
+                    android:id="@+id/didEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/item_height"
+                    android:layout_marginRight="5dp"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:ems="10"
+                    android:paddingLeft="5dp"
+                    android:singleLine="true"
+                    android:text=""
+                    android:textSize="@dimen/text_size" />
+
+                <ImageButton
+                    android:id="@+id/popup_btn"
+                    android:layout_width="@dimen/item_height"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bottom_attr_bg"
+                    android:src="@drawable/bottom_attr" />
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/spinnerMode"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:entries="@array/plantes"
+                android:paddingLeft="5dp"
+                android:textSize="@dimen/text_size" />
+
+            <EditText
+                android:id="@+id/initEdit"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:paddingLeft="5dp"
+                android:text="EBGAEIBIKHJJGFJKEOGCFAEPHPMAHONDGJFPBKCPAJJMLFKBDBAGCJPBGOLKIKLKAJMJKFDOOFMOBECEJIMM"
+                android:textSize="@dimen/text_size" />
+
+            <EditText
+                android:id="@+id/initCount"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:hint="多次连线次数，默认为1次"
+                android:inputType="number"
+                android:paddingLeft="5dp"
+                android:text=""
+                android:textSize="@dimen/text_size" />
+
+            <EditText
+                android:id="@+id/initDelay"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:hint="请输入整数，输入0默认为3秒"
+                android:inputType="number"
+                android:paddingLeft="5dp"
+                android:text=""
+                android:textSize="@dimen/text_size" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tx_wakeup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:drawableLeft="@drawable/arrow_down"
+        android:drawablePadding="10dp"
+        android:paddingLeft="10dp"
+        android:text="唤醒信息:" />
+
+    <LinearLayout
+        android:id="@+id/layout_wakeup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:gravity="bottom"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textWakeupKey"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="WakeupKey"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+
+            <TextView
+                android:id="@+id/textip1"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="IP1:"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+
+            <TextView
+                android:id="@+id/textip2"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="IP2:"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+
+            <TextView
+                android:id="@+id/textip3"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="IP3:"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_size" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/editWakeupKey"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:hint="请输入16位WakeupKey"
+                android:paddingLeft="5dp"
+                android:text=""
+                android:textSize="@dimen/text_size" />
+
+            <EditText
+                android:id="@+id/editip1"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:paddingLeft="5dp"
+                android:text=""
+                android:textSize="@dimen/text_size" />
+
+            <EditText
+                android:id="@+id/editip2"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:paddingLeft="5dp"
+                android:text=""
+                android:textSize="@dimen/text_size" />
+
+            <EditText
+                android:id="@+id/editip3"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_height"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_bg"
+                android:ems="10"
+                android:paddingLeft="5dp"
+                android:text=""
+                android:textSize="@dimen/text_size" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/sets_ll"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/login_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:alpha="0.7"
+            android:background="@drawable/login_bt_bg"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="Start"
+            android:textColor="@drawable/login_text_color"
+            android:textSize="@dimen/text_size" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ScrollView
+            android:id="@+id/scrollView1"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/linearLayout2"
+            android:fillViewport="true"
+            android:paddingLeft="10dp">
+
+            <TextView
+                android:id="@+id/logText"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size" />
+        </ScrollView>
+    </LinearLayout>
+
+</LinearLayout>

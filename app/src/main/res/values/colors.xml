@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="gray">#999999</color>
+    <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
+    <color name="bwhite">#88ffffff</color>
+    <color name="blue_w">#1293e2</color>
+    <color name="gray_w">#bebebe</color>
+    <color name="gray_bt">#E5E5E5</color>
+    <color name="tran">#00000000</color>
+
+    <color name="tab_text_color">#ff74787c</color>
+    <color name="tab_text_color_selected">#3B97F5</color>
+
+</resources>
