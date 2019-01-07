@@ -16,6 +16,7 @@ import android.widget.Button;
 
 import com.mid.lib.DemoSink;
 import com.mid.lib.DemoSource;
+import com.mid.lib.FrameCallback;
 import com.p2p.pppp_api.PPCS_APIs;
 import com.p2p.pppp_api.st_PPCS_NetInfo;
 import com.shangyun.p2ptester.handler.ReceiveHandler;
@@ -36,7 +37,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 
-public class TestActivity extends Activity implements SurfaceHolder.Callback {
+public class TestActivity extends Activity implements SurfaceHolder.Callback, FrameCallback {
     private final static String MIME_TYPE = "video/avc"; // H.264 Advanced Video
     private final static int TIME_INTERNAL = 30;
     private final String TAG = "rwtest";
@@ -45,7 +46,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback {
     int UDP_Port = 0;
     int channel = 1;
     String initString = "EBGAEIBIKHJJGFJKEOGCFAEPHPMAHONDGJFPBKCPAJJMLFKBDBAGCJPBGOLKIKLKAJMJKFDOOFMOBECEJIMM";
-    @BindView(R.id.rw_test1)
+    @BindView(R.id.phone_monitor)
     Button btnStart;
     @BindView(R.id.hang_up)
     Button btsHangup;
@@ -220,6 +221,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback {
     }
 
 
+
     public void initFFlyParser() {
         DemoSink sink = new DemoSink(this);
         DemoSource source = new DemoSource();
@@ -260,7 +262,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback {
         }
     }
 
-
+    @Override
     public boolean onFrame(byte[] buf, int offset, int length) {
         // Get input buffer index
         Log.i(TAG, "onFrame offset=" + offset + " length: " + length);
@@ -299,11 +301,20 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback {
             @Override
             public void run() {
                 if (initConnection()) {
+                    DemoSink sink = new DemoSink(TestActivity.this);
+                    DemoSource source = new DemoSource();
+                    source.addSink(sink);
+                    List<Thread> ths = new ArrayList<>(10);
+                    ths.add(new Thread(source));
+                    ths.add(new Thread(sink));
+                    for (Thread th : ths) {
+                        th.start();
+                    }
                     mSendThread = new HandlerThread("send");
                     mSendThread.start();
                     mReceiveThread = new HandlerThread("receive");
                     mReceiveThread.start();
-                    mReceiveHandler = new ReceiveHandler(mReceiveThread.getLooper(), mHandleSession);
+                    mReceiveHandler = new ReceiveHandler(mReceiveThread.getLooper(), mHandleSession, source);
                     mSendHandler = new SendHandler(mSendThread.getLooper(), mHandleSession);
                     mSendHandler.AddNotify(mReceiveHandler);
                     mHandler.sendMessage(mHandler.obtainMessage(1));
@@ -340,12 +351,12 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback {
         }
     }
 
-    @OnClick({R.id.h264_test, R.id.starth264, R.id.hang_up, R.id.rw_test1, R.id.MediaStarme})
+    @OnClick({R.id.h264_test, R.id.starth264, R.id.hang_up, R.id.phone_monitor, R.id.MediaStarme})
     public void onViewClick(View view) {
         Log.i(TAG, "OnClick");
         int id = view.getId();
         switch (id) {
-            case R.id.rw_test1:
+            case R.id.phone_monitor:
                 Log.i(TAG, "xxxxx");
                 mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_JSON));
                 break;
@@ -356,6 +367,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback {
             case R.id.hang_up:
                 Log.i(TAG, "hang_up");
                 mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_HANG_UP));
+                break;
             case R.id.starth264:
                 Log.i(TAG, "starth264");
                 new Thread(mH264RawHandler).run();

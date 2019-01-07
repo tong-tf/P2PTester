@@ -5,16 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".TestActivity">
+    tools:context=".TestActivity"
+    tools:layout_editor_absoluteY="25dp">
 
     <Button
-        android:id="@+id/rw_test1"
+        android:id="@+id/phone_monitor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Button"
+        android:text="@string/phone_monitoring"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,16 +23,12 @@
         android:id="@+id/h264_test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="H264"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.129"
-        app:layout_constraintStart_toEndOf="@+id/rw_test1"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="@+id/hang_up"
+        app:layout_constraintTop_toBottomOf="@+id/hang_up" />
 
     <Button
         android:id="@+id/hang_up"
@@ -41,38 +38,47 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="@string/hang_up"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rw_test1" />
+        app:layout_constraintStart_toStartOf="@+id/phone_monitor"
+        app:layout_constraintTop_toBottomOf="@+id/phone_monitor" />
 
     <SurfaceView
         android:id="@+id/h264show"
         android:layout_width="640dp"
-        android:layout_height="640dp"
-        android:layout_marginBottom="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_height="480dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/starth264"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="@string/start_h264"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.117"
-        app:layout_constraintStart_toEndOf="@+id/h264_test"
-        tools:layout_editor_absoluteY="8dp" />
+        app:layout_constraintStart_toStartOf="@+id/h264_test"
+        app:layout_constraintTop_toBottomOf="@+id/h264_test" />
 
     <Button
         android:id="@+id/MediaStarme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="@string/mediastarme"
-        tools:layout_editor_absoluteX="529dp"
-        tools:layout_editor_absoluteY="0dp" />
+        app:layout_constraintStart_toStartOf="@+id/starth264"
+        app:layout_constraintTop_toBottomOf="@+id/starth264" />
+
+    <Button
+        android:id="@+id/audio_aac"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/audio_test"
+        app:layout_constraintTop_toBottomOf="@+id/MediaStarme"
+        tools:layout_editor_absoluteX="8dp" />
 </android.support.constraint.ConstraintLayout>
