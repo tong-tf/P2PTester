@@ -17,6 +17,7 @@ import android.widget.Button;
 import com.mid.lib.DemoSink;
 import com.mid.lib.DemoSource;
 import com.mid.lib.FrameCallback;
+import com.mid.lib.audio.AudioRecorder;
 import com.p2p.pppp_api.PPCS_APIs;
 import com.p2p.pppp_api.st_PPCS_NetInfo;
 import com.shangyun.p2ptester.handler.ReceiveHandler;
@@ -56,6 +57,8 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
     Button btsH264Test;
     @BindView(R.id.MediaStarme)
     Button MediaStarme;
+    @BindView(R.id.audio_aac)
+    Button btsAudioAac;
     @BindView(R.id.h264show)
     SurfaceView h264sf;
     MediaCodec mCodec;
@@ -69,7 +72,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
     private HandlerThread mReceiveThread;
     private HandlerThread mSendThread;
     private int mCount = 0;
-
+    private AudioRecorder mRecorder;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -188,10 +191,14 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
         btnStart.setEnabled(false);
         btsHangup.setEnabled(false);
         initNet();
+        initAudio();
         initSurfaceHolder();
 
     }
 
+    private void initAudio(){
+        mRecorder = new AudioRecorder();
+    }
     private void initSurfaceHolder() {
         SurfaceHolder holder = h264sf.getHolder();
         holder.addCallback(this);
@@ -351,7 +358,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
         }
     }
 
-    @OnClick({R.id.h264_test, R.id.starth264, R.id.hang_up, R.id.phone_monitor, R.id.MediaStarme})
+    @OnClick({R.id.h264_test, R.id.starth264, R.id.hang_up, R.id.phone_monitor, R.id.MediaStarme, R.id.audio_aac})
     public void onViewClick(View view) {
         Log.i(TAG, "OnClick");
         int id = view.getId();
@@ -375,6 +382,17 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
             case R.id.MediaStarme:
                 Log.i(TAG, "MediaStarme");
                 startFFly();
+                break;
+            case R.id.audio_aac:
+                Log.i(TAG, "audio_aac");
+                if(mRecorder.isRecording){
+                    mRecorder.stopAudioRecord();
+                    btsAudioAac.setText(R.string.start_record);
+                }else{
+                    mRecorder.startAudioRecord();
+                    btsAudioAac.setText(R.string.stop_record);
+                }
+                break;
             default:
                 break;
 
