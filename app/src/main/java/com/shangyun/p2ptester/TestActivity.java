@@ -17,7 +17,10 @@ import android.widget.Button;
 import com.mid.lib.DemoSink;
 import com.mid.lib.DemoSource;
 import com.mid.lib.FrameCallback;
+import com.mid.lib.audio.AACDecoder;
+import com.mid.lib.audio.ADTSDecoder;
 import com.mid.lib.audio.AudioRecorder;
+import com.mid.lib.audio.PcmPlayer;
 import com.p2p.pppp_api.PPCS_APIs;
 import com.p2p.pppp_api.st_PPCS_NetInfo;
 import com.shangyun.p2ptester.handler.ReceiveHandler;
@@ -26,6 +29,7 @@ import com.shangyun.p2ptester.utils.ErrMsg;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -251,7 +255,6 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
                     source.stop();
                     System.out.println("Data done , quit");
                     break;
-
                 }
                 Log.i(TAG, "send data once");
                 source.send(Arrays.copyOfRange(buff, 0, rv));
@@ -358,7 +361,8 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
         }
     }
 
-    @OnClick({R.id.h264_test, R.id.starth264, R.id.hang_up, R.id.phone_monitor, R.id.MediaStarme, R.id.audio_aac})
+    @OnClick({R.id.h264_test, R.id.starth264, R.id.hang_up, R.id.phone_monitor, R.id.MediaStarme,
+            R.id.audio_aac, R.id.play_aac})
     public void onViewClick(View view) {
         Log.i(TAG, "OnClick");
         int id = view.getId();
@@ -393,12 +397,45 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
                     btsAudioAac.setText(R.string.stop_record);
                 }
                 break;
+            case R.id.play_aac:
+                playAudio();
+                break;
             default:
                 break;
 
         }
     }
 
+
+    private void playAudio(){
+        // shoud be done in a seperate thread.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                InputStream ins = null;
+                int bsize = 32*1024;
+                byte[] buff = new byte[bsize];
+                int rv = 0;
+                ADTSDecoder adtsDecoder = new ADTSDecoder();
+                AACDecoder aacDecoder = new AACDecoder();
+                PcmPlayer player = new PcmPlayer();
+                player.init();
+                adtsDecoder.setHandler(aacDecoder);
+                aacDecoder.setCallback(player);
+                aacDecoder.startDecode();
+                try {
+                    ins = new FileInputStream("/sdcard/test.aac");
+                    while((rv=ins.read(buff)) > 0){
+                        adtsDecoder.process(buff,0, rv);
+                    }
+                    ins.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+              //  player.release();
+            }
+        }).start();
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {

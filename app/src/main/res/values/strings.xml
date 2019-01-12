@@ -10,4 +10,5 @@
     <string name="phone_monitoring">PHONE MONITORING</string>
     <string name="start_record">Start Record</string>
     <string name="stop_record">Stop Record</string>
+    <string name="play_aac">play AAC</string>
 </resources>
