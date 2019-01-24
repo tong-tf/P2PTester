@@ -25,7 +25,7 @@ public class AudioRecorder {
     private int SAMPLE_RATE = 44100; //采样率 8K或16K 44100
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO; //CHANNEL_IN_MONO音频通道(单声道)  双：CHANNEL_IN_STEREO
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT; //音频格式
-    private static final int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;  //音频源（麦克风）
+    private static final int AUDIO_SOURCE = MediaRecorder.AudioSource.VOICE_COMMUNICATION; // MediaRecorder.AudioSource.MIC;  //音频源（麦克风）
     private String encodeType = MediaFormat.MIMETYPE_AUDIO_AAC;
     private static final int SAMPLED_PER_FRAME = 1024*4;//100 * 1024 ;//4096
     private MediaCodec mediaEncode;
