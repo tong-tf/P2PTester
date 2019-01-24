@@ -84,23 +84,6 @@ public class ReceiveHandler extends Handler {
         public void run() {
             byte[] buffer = new byte[BUFFER_SIZE];
             int[] size = new int[1];
-            String filename = "/sdcard/test.data";
-            File file = new File(filename);
-            OutputStream fs = null;
-            size[0] = BUFFER_SIZE;
-            if(file.exists()){
-                file.delete();
-                try {
-                    file.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            try {
-                fs = new FileOutputStream(filename);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
             while (!Thread.interrupted()){
                 int ret = PPCS_APIs.PPCS_Read(mSession, mChannel, buffer, size, timeout_ms);
                 if (ret < 0) {
@@ -122,20 +105,8 @@ public class ReceiveHandler extends Handler {
                     }
                     byte[] data = Arrays.copyOfRange(buffer, 0, recvSize);
                     Log.i(TAG, "PPCS_PktRecv size = " + data.length);
-                    try {
-                        fs.write(data);
-                        fs.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
                     mSource.send(data);
                 }
-            }
-            try {
-                fs.close();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
