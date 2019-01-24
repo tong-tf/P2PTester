@@ -8,6 +8,9 @@ import android.util.Log;
 import com.mid.lib.FrameCallback;
 import com.mid.lib.ISink;
 import com.mid.lib.ISource;
+import com.mid.lib.audio.AACDecoder;
+import com.mid.lib.audio.ADTSDecoder;
+import com.mid.lib.audio.PcmPlayer;
 import com.p2p.pppp_api.PPCS_APIs;
 import com.shangyun.p2ptester.utils.DataUtil;
 import com.shangyun.p2ptester.utils.ErrMsg;
@@ -16,16 +19,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
 public class ReceiveHandler extends Handler {
     public final static int MSG_RECEIVE_JSON = 1;
     public final static int MSG_RECEIVE_VIDEO = 2;
-    private final static String TAG = "rwtest";
+    private final static String TAG = "ReceiveHandler";
     public int readTimeoutMs = 200; //
     private int mHandleSession = -1;
     ISource mSource;
@@ -37,12 +42,12 @@ public class ReceiveHandler extends Handler {
 
     @Override
     public void handleMessage(Message msg) {
+        int channel = -1;
         switch (msg.what) {
             case MSG_RECEIVE_JSON:
                 String out = receiveData(1);
                 if (out != null) {
                     Log.i(TAG, "receiveData: " + out);
-                    int channel = -1;
                     try {
                         JSONObject js = new JSONObject(out);
                         channel = js.getInt("channels");
@@ -50,10 +55,9 @@ public class ReceiveHandler extends Handler {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    if(channel != -1){
-                       new Thread(new VideoDataProcessor(mHandleSession, channel, mSource)).start();
-                    }
                 }
+                new Thread(new VideoDataProcessor(mHandleSession, 2, mSource)).start();
+                new Thread(new DataProcessor(mHandleSession, 3)).start();
                 break;
             case MSG_RECEIVE_VIDEO:
 
@@ -63,11 +67,12 @@ public class ReceiveHandler extends Handler {
         }
     }
 
+
     public static final  class VideoDataProcessor implements  Runnable{
         private byte mChannel;
         private int mSession;
         private ISource mSource;
-        int timeout_ms = 200;
+        int timeout_ms = 500;
         private final int BUFFER_SIZE = 16*1024;
         VideoDataProcessor(int session, int channel, ISource source){
             mChannel = (byte)channel;
@@ -97,7 +102,7 @@ public class ReceiveHandler extends Handler {
                 e.printStackTrace();
             }
             while (!Thread.interrupted()){
-                int ret = PPCS_APIs.PPCS_Read(mSession, mChannel, buffer, size, 0xFFFFFFF);
+                int ret = PPCS_APIs.PPCS_Read(mSession, mChannel, buffer, size, timeout_ms);
                 if (ret < 0) {
                     if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_TIMEOUT == ret) {
                         //updateStatus("Session Closed TimeOUT!!\n");
@@ -108,8 +113,12 @@ public class ReceiveHandler extends Handler {
                     }
                 }else{
                     int recvSize = size[0];
+                    if (recvSize <= 0){
+                        continue;
+                    }
                     if(recvSize != BUFFER_SIZE){
                         // TODO: less than need
+
                     }
                     byte[] data = Arrays.copyOfRange(buffer, 0, recvSize);
                     Log.i(TAG, "PPCS_PktRecv size = " + data.length);
@@ -163,13 +172,27 @@ public class ReceiveHandler extends Handler {
         byte[] data;
         byte[] buffer = new byte[1024];
         int[] size = new int[1];
-        size[0] = buffer.length;
-        int ret = PPCS_APIs.PPCS_Read(mHandleSession, (byte) channel, buffer, size, timeout_ms);
-        if (ret != 0) {
-            Log.i(TAG, "PPCS_Read, ret=" + ret + " , Error=" + ErrMsg.getErrorMessage(ret));
-        }
-        rsize = size[0];
-        Log.i(TAG, "rsize = " + rsize + " buffer[0]" + buffer[0] + ", buffer[1]=" + buffer[1]);
+        int retry = 5;
+        int ret = 0;
+        do {
+            size[0] = buffer.length;
+            ret = PPCS_APIs.PPCS_Read(mHandleSession, (byte) channel, buffer, size, timeout_ms);
+            if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_TIMEOUT == ret || PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_REMOTE == ret
+                    || retry==0) {
+                Log.i(TAG, "PPCS_Read, ret=" + ret + " , Error=" + ErrMsg.getErrorMessage(ret));
+                return null;
+            }
+            if (ret != 0) {
+                Log.i(TAG, "PPCS_Read, ret=" + ret + " , Error=" + ErrMsg.getErrorMessage(ret));
+            }
+            rsize = size[0];
+            retry -= 1;
+            if(rsize > 0 ) {
+                break;
+            }
+            Log.i(TAG, "rsize = " + rsize + " buffer[0] = " + buffer[0] + ", buffer[1]=" + buffer[1]);
+        }while(ret == PPCS_APIs.ERROR_PPCS_TIME_OUT );
+
         if (rsize > 8 && (buffer[0] == 35 && buffer[1] == 35)) {  // json data begin with ##xxxx$$
             TotalSize = DataUtil.byte4int(Arrays.copyOfRange(buffer, 2, 6));
             currenSize = 0;

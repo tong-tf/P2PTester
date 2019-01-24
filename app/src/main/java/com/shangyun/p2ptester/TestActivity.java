@@ -85,6 +85,9 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
                 case 1:
                     btnStart.setEnabled(true);
                     btsHangup.setEnabled(true);
+                    if(mRecorder != null){
+                        mRecorder.setNetinfo(mHandleSession, 4);
+                    }
             }
         }
     };
@@ -190,7 +193,6 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
         ButterKnife.bind(this);
-
 
         btnStart.setEnabled(false);
         btsHangup.setEnabled(false);
@@ -339,7 +341,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
         PPCS_APIs.PPCS_NetworkDetect(NetInfo, 0);
         mHandleSession = PPCS_APIs.PPCS_Connect(mdid, mMode, UDP_Port);
         if (mHandleSession >= 0) {
-
+            Log.i(TAG, "Connect OK, session=" + mHandleSession);
         } else {
             if (mHandleSession == PPCS_APIs.ERROR_PPCS_USER_CONNECT_BREAK) {
                 Log.i(TAG, "Connect break is called !\n");
@@ -420,7 +422,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
                 AACDecoder aacDecoder = new AACDecoder();
                 PcmPlayer player = new PcmPlayer();
                 player.init();
-                adtsDecoder.setHandler(aacDecoder);
+                adtsDecoder.addHandler(aacDecoder);
                 aacDecoder.setCallback(player);
                 aacDecoder.startDecode();
                 try {

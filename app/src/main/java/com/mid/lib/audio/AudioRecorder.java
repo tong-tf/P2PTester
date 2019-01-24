@@ -9,6 +9,9 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 
+import com.p2p.pppp_api.PPCS_APIs;
+import com.shangyun.p2ptester.utils.ErrMsg;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,9 +38,25 @@ public class AudioRecorder {
     private RecorderTask recorderTask;
     public boolean isRecording ;
 
+    private int mHandleSession;  //
+    private int mCommunicationChannel; //
+
     public List<Callback> mCallbacks = new ArrayList<>();
 
+    public AudioRecorder(int s, int ch){
+        mHandleSession = s;
+        mCommunicationChannel = ch;
+        isRecording = false;
+        recorderTask = new RecorderTask();
+    }
+
+    public void setNetinfo(int s, int ch){
+        mHandleSession = s;
+        mCommunicationChannel = ch;
+    }
     public AudioRecorder() {
+        mHandleSession = -1;
+        mCommunicationChannel = -1;
         isRecording = false;
         recorderTask = new RecorderTask();
     }
@@ -46,6 +65,19 @@ public class AudioRecorder {
         recorderThread = new Thread(recorderTask);
         recorderThread.start();
     }
+
+    private void send(byte[] data){
+        int rv = 0;
+        int []wsize = new int[1];
+        wsize[0] = data.length;
+        if(mHandleSession != -1){
+            rv = PPCS_APIs.PPCS_Check_Buffer(mHandleSession, (byte) mCommunicationChannel, wsize, null);
+            Log.i(TAG, String.format("PPCS_Check_Buffer: rv = %d, msg=%s", rv, ErrMsg.getErrorMessage(rv)));
+            rv = PPCS_APIs.PPCS_Write(mHandleSession, (byte) mCommunicationChannel, data, data.length);
+            Log.i(TAG, String.format("ThreadWrite CH=%d, ret=%d, msg=%s!!\n", mCommunicationChannel, rv, ErrMsg.getErrorMessage(rv)));
+        }
+    }
+
 
     public void stopAudioRecord(){
         isRecording = false;
@@ -75,6 +107,7 @@ public class AudioRecorder {
         packet[6] = (byte) 0xFC;
 
     }
+
     public interface  Callback{
         public void onPcmData(byte[] pcm);
     }
@@ -97,7 +130,7 @@ public class AudioRecorder {
             try {
                 fout = new FileOutputStream("/sdcard/test.aac");
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                Log.i(TAG, e.getMessage());
                 fout = null;
             }
             AACEncoder encoder = new AACEncoder();
@@ -111,6 +144,7 @@ public class AudioRecorder {
                         byte[] data = new byte[info.size + 7];
                         addADTStoPacket(data, info.size+7);
                         buff.get(data, 7, info.size);
+                        send(data);
                         fout.write(data);
                         fout.flush();
 

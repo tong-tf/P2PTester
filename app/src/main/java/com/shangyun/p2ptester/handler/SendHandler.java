@@ -16,7 +16,7 @@ import java.util.List;
 public class SendHandler extends Handler {
     public final static int MSG_SEND_JSON = 1;
     public final static int MSG_SEND_HANG_UP = 2;
-    private final static String TAG = "rwtest";
+    private final static String TAG = "SendHandler";
     private int mHandleSession = -1;
     private List<Handler> mNotifiers = new ArrayList<>();
 
@@ -68,7 +68,6 @@ public class SendHandler extends Handler {
                     Log.i(TAG, "PPCS_Check_Buffer pass, begin send data");
                     ret = PPCS_APIs.PPCS_Write(mHandleSession, (byte) channel, buffer, buffer.length);
                     if (0 > ret) {
-                        //updateStatus(String.format("PPCS_Write(%s, %s, .., %s)", mHandleSession, channel, TEST_WRITE_SIZE));
                         if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_TIMEOUT == ret) {
                             Log.i(TAG, String.format("ThreadWrite CH=%d, ret=%d, Session Closed TimeOUT!!\n", channel, ret));
                         } else if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_REMOTE == ret) {

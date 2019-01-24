@@ -51,7 +51,7 @@ public class ErrMsg {
             case -22:
                 return "ERROR_PPCS_FAIL_TO_CREATE_THREAD";
             default:
-                return "Unknow, something is wrong!";
+                return "Unknow, something else is happen!";
         }
     }
 }
