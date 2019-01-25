@@ -5,7 +5,7 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 
 public class FFlyVideo {
-    public static final String TAG = "rwtest";
+    public static final String TAG = "FFlyVideo";
     int lens;
     byte flags;
     long time_pts;

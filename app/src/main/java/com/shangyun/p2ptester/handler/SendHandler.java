@@ -34,17 +34,30 @@ public class SendHandler extends Handler {
         FeiflyJson.Builder builder = new FeiflyJson.Builder();
         switch (msg.what) {
             case MSG_SEND_JSON:
-                sendData(builder.build());
+                if(sendData(builder.build())){
+                    for (Handler h : mNotifiers) {
+                        h.sendMessage(h.obtainMessage(ReceiveHandler.MSG_RECEIVE_JSON));
+                    }
+                }
                 break;
             case MSG_SEND_HANG_UP:
                 builder.setChannels("1");
                 builder.setOperation("hang up");
-                sendData(builder.build());
+                if(sendData(builder.build())){
+                    for (Handler h : mNotifiers) {
+                        h.sendMessage(h.obtainMessage(ReceiveHandler.MSG_RECEIVE_HANGUP));
+                    }
+                }
                 break;
         }
     }
 
-    public void sendData(FeiflyJson fj) {
+    /**
+     *
+     * @param fj  FeiflyJson data to send
+     * @return true on OK, false on Fail
+     */
+    public boolean sendData(FeiflyJson fj) {
         int Check_ret;
         int ret;
         int channel = 1;
@@ -75,16 +88,17 @@ public class SendHandler extends Handler {
                         } else {
                             Log.i(TAG, String.format("ThreadWrite CH=%d, ret=%d [%s]\n", channel, ret, ErrMsg.getErrorMessage(ret)));
                         }
+                        return false;
                     } else {
-                        for (Handler h : mNotifiers) {
-                            h.sendMessage(h.obtainMessage(ReceiveHandler.MSG_RECEIVE_JSON));
-                        }
+                        return true;
                     }
                 }
             } else {
                 Log.i(TAG, "PPCS_Check fail");
+                return false;
             }
         }
+        return false;
 
     }
 }

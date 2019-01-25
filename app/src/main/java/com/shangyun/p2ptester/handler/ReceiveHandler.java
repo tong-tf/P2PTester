@@ -30,10 +30,14 @@ import java.util.Arrays;
 public class ReceiveHandler extends Handler {
     public final static int MSG_RECEIVE_JSON = 1;
     public final static int MSG_RECEIVE_VIDEO = 2;
+    public final static int MSG_RECEIVE_HANGUP = 3;
     private final static String TAG = "ReceiveHandler";
     public int readTimeoutMs = 200; //
     private int mHandleSession = -1;
+    private Thread mVideoThread;
+    private Thread mDataThread;
     ISource mSource;
+
     public ReceiveHandler(Looper looper, int handleSession, ISource source) {
         super(looper);
         mHandleSession = handleSession;
@@ -56,11 +60,26 @@ public class ReceiveHandler extends Handler {
                         e.printStackTrace();
                     }
                 }
-                new Thread(new VideoDataProcessor(mHandleSession, 2, mSource)).start();
-                new Thread(new DataProcessor(mHandleSession, 3)).start();
+                if(mVideoThread == null){
+                    mVideoThread = new Thread(new VideoDataProcessor(mHandleSession, 2, mSource));
+                    mVideoThread.start();
+                }
+                if(mDataThread == null){
+                    mDataThread = new Thread(new DataProcessor(mHandleSession, 3));
+                    mDataThread.start();
+                }
                 break;
             case MSG_RECEIVE_VIDEO:
-
+                break;
+            case MSG_RECEIVE_HANGUP:
+                if(mVideoThread != null){
+                    mVideoThread.interrupt();
+                    mVideoThread = null;
+                }
+                if(mDataThread != null){
+                    mDataThread.interrupt();
+                    mDataThread = null;
+                }
                 break;
             default:
                 break;
@@ -94,6 +113,8 @@ public class ReceiveHandler extends Handler {
                     } else if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_REMOTE == ret) {
                        // updateStatus("Session Remote Close!!\n");
                         break;
+                    }else{
+                        Log.i(TAG, String.format("VideoDataProcessor.PPCS_Read %d, %s", ret, ErrMsg.getErrorMessage(ret)));
                     }
                 }else{
                     int recvSize = size[0];
@@ -109,31 +130,12 @@ public class ReceiveHandler extends Handler {
                     mSource.send(data);
                 }
             }
-        }
-    }
-    public void readChannelData(int channel){
-        int TotalSize = 0;
-        int currenSize = 0;  //
-        int left = 0;
-        int rsize = 0;
-        int timeout_ms = 200;
-        byte[] data;
-        byte[] buffer = new byte[4096];
-        int[] size = new int[1];
-        size[0] = buffer.length;
-
-        while(true){
-            int ret = PPCS_APIs.PPCS_PktRecv(mHandleSession, (byte) channel, buffer, size, timeout_ms);
-            rsize = size[0];
-            Log.i(TAG, String.format("PPCS_PktRecv ret=%s, size=%d",ErrMsg.getErrorMessage(ret), rsize ));
-            if(rsize > 0){
-                //mFrameCallback.onFrame(buffer, 0, rsize);
-
+            if(mSource != null){
+                mSource.stop();
             }
         }
-
-
     }
+
 
     public String receiveData(int channel) {
         int TotalSize = 0;
