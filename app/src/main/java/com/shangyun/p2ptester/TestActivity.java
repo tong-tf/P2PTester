@@ -84,7 +84,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
             switch (msg.what) {
                 case 1:
                     btnStart.setEnabled(true);
-                    btsHangup.setEnabled(true);
+                  //  btsHangup.setEnabled(true);
                     if(mRecorder != null){
                         mRecorder.setNetinfo(mHandleSession, 4);
                     }
@@ -371,6 +371,8 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
         switch (id) {
             case R.id.phone_monitor:
                 Log.i(TAG, "xxxxx");
+                btnStart.setEnabled(false);
+                btsHangup.setEnabled(true);
                 mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_JSON));
                 break;
             case R.id.h264_test:
@@ -379,6 +381,8 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
                 break;
             case R.id.hang_up:
                 Log.i(TAG, "hang_up");
+                btnStart.setEnabled(true);
+                btsHangup.setEnabled(false);
                 mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_HANG_UP));
                 break;
             case R.id.starth264:
