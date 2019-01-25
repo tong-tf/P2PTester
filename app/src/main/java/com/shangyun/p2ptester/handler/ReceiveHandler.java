@@ -85,6 +85,7 @@ public class ReceiveHandler extends Handler {
             byte[] buffer = new byte[BUFFER_SIZE];
             int[] size = new int[1];
             while (!Thread.interrupted()){
+                size[0] = BUFFER_SIZE;
                 int ret = PPCS_APIs.PPCS_Read(mSession, mChannel, buffer, size, timeout_ms);
                 if (ret < 0) {
                     if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_TIMEOUT == ret) {
@@ -158,7 +159,7 @@ public class ReceiveHandler extends Handler {
             }
             rsize = size[0];
             retry -= 1;
-            if(rsize > 0 ) {
+            if(rsize > 0  || retry == 0) { // we fetch data or retry exceed.
                 break;
             }
             Log.i(TAG, "rsize = " + rsize + " buffer[0] = " + buffer[0] + ", buffer[1]=" + buffer[1]);
