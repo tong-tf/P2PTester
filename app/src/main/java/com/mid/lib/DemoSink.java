@@ -8,10 +8,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class DemoSink implements ISink, Runnable {
     BlockingQueue<FFlyVideo> mQu = new LinkedBlockingDeque<>();
     FFlyVideo sentinel = new FFlyVideo();
-    TestActivity mTestActivity;
+    FrameCallback mCallback;
 
-    public DemoSink(TestActivity test) {
-        mTestActivity = test;
+    public DemoSink(FrameCallback callback) {
+        mCallback = callback;
     }
 
     @Override
@@ -44,11 +44,11 @@ public class DemoSink implements ISink, Runnable {
                 System.out.println(video);
                 if (video.spspps != null) {
                     do {
-                        ok = mTestActivity.onFrame(video.spspps.array(), 0, video.spspps.limit());
+                        ok = mCallback.onFrame(video.spspps.array(), 0, video.spspps.limit());
                     } while (!ok);
                 }
                 do {
-                    ok = mTestActivity.onFrame(video.data.array(), 0, video.data.limit());
+                    ok = mCallback.onFrame(video.data.array(), 0, video.data.limit());
                 } while (!ok);
 
             } catch (InterruptedException e) {
