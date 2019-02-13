@@ -164,8 +164,6 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
     }
 
 
-
-
     @Override
     public boolean onFrame(byte[] buf, int offset, int length) {
         // Get input buffer index

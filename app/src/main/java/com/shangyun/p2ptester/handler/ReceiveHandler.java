@@ -107,23 +107,14 @@ public class ReceiveHandler extends Handler {
                 size[0] = BUFFER_SIZE;
                 int ret = PPCS_APIs.PPCS_Read(mSession, mChannel, buffer, size, timeout_ms);
                 if (ret < 0) {
-                    if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_TIMEOUT == ret) {
-                        //updateStatus("Session Closed TimeOUT!!\n");
-                        break;
-                    } else if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_REMOTE == ret) {
-                       // updateStatus("Session Remote Close!!\n");
-                        break;
-                    }else{
-                        Log.i(TAG, String.format("VideoDataProcessor.PPCS_Read %d, %s", ret, ErrMsg.getErrorMessage(ret)));
-                    }
+                    Log.i(TAG, String.format("VideoDataProcessor.PPCS_Read %d, %s", ret, ErrMsg.getErrorMessage(ret)));
                 }else{
                     int recvSize = size[0];
                     if (recvSize <= 0){
                         continue;
                     }
                     if(recvSize != BUFFER_SIZE){
-                        // TODO: less than need
-
+                        // TODO: less than need, for now we just ignore.
                     }
                     byte[] data = Arrays.copyOfRange(buffer, 0, recvSize);
                     Log.i(TAG, "PPCS_PktRecv size = " + data.length);
