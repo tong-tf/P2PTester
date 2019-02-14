@@ -1,10 +1,12 @@
 package com.shangyun.p2ptester;
 
+import android.Manifest;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,8 +33,10 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import pub.devrel.easypermissions.EasyPermissions;
 
-public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.Callback, FrameCallback {
+public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.Callback,
+        FrameCallback {
     private final static String MIME_TYPE = "video/avc"; // H.264 Advanced Video
     private final static int TIME_INTERNAL = 30;
     private final String TAG = "Main2Activity";
@@ -57,6 +61,13 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
     private HandlerThread mSendThread;
     private int mCount = 0;
     private AudioRecorder mRecorder;
+
+    private String[] mPermissions = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO
+    };
+    public static final int CODE = 0x001;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -86,14 +97,35 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        requestPermission();
         ButterKnife.bind(this);
         btnStart.setEnabled(false);
         btsHangup.setEnabled(false);
         initNet();
         initAudio();
         initSurfaceHolder();
+
     }
 
+
+    private void requestPermission(){
+        int need[] = new int[mPermissions.length];
+        int cnt = 0;
+        for(int i=0; i<mPermissions.length; i++){
+            if(!EasyPermissions.hasPermissions(this, mPermissions[i])){
+                need[cnt++] = i;
+            }
+        }
+
+        String needPerm[] = new String[cnt];
+        for(int i=0; i<cnt; i++){
+            needPerm[i] = mPermissions[need[i]];
+        }
+        if(cnt > 0){
+            requestPermissions(needPerm, 0x001);
+        }
+
+    }
 
     @OnClick({R.id.phone_monitor, R.id.hang_up})
     public void OnClick(View v){
@@ -211,6 +243,14 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         Log.i(TAG, "surfaceCreated");
         initCodec();
@@ -225,4 +265,5 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
 
     }
+
 }
