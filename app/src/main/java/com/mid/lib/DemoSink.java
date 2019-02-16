@@ -37,19 +37,20 @@ public class DemoSink implements ISink, Runnable {
         while (true) {
             try {
                 FFlyVideo video = mQu.take();
-                boolean ok = false;
+                Error ok = Error.ERROR_NONE;
                 if (!video.isOk()) {
-                    break;
+                    //break;
+                    continue;
                 }
                 System.out.println(video);
                 if (video.spspps != null) {
                     do {
                         ok = mCallback.onFrame(video.spspps.array(), 0, video.spspps.limit());
-                    } while (!ok);
+                    } while (ok == Error.ERROR_RETRY);
                 }
                 do {
                     ok = mCallback.onFrame(video.data.array(), 0, video.data.limit());
-                } while (!ok);
+                } while (ok == Error.ERROR_RETRY);
 
             } catch (InterruptedException e) {
                 e.printStackTrace();

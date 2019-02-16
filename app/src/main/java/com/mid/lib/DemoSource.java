@@ -90,7 +90,8 @@ public class DemoSource implements ISource, Runnable {
                     for (ISink s : sinkers) {
                         s.stop();
                     }
-                    break;
+                    continue;
+                   // break;
                 }
                 parse(bs);
             } catch (InterruptedException e) {

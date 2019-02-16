@@ -16,6 +16,7 @@ import android.widget.Button;
 
 import com.mid.lib.DemoSink;
 import com.mid.lib.DemoSource;
+import com.mid.lib.Error;
 import com.mid.lib.FrameCallback;
 import com.mid.lib.audio.AACDecoder;
 import com.mid.lib.audio.ADTSDecoder;
@@ -275,7 +276,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
     }
 
     @Override
-    public boolean onFrame(byte[] buf, int offset, int length) {
+    public Error onFrame(byte[] buf, int offset, int length) {
         // Get input buffer index
         Log.i(TAG, "onFrame offset=" + offset + " length: " + length);
         ByteBuffer[] inputBuffers = mCodec.getInputBuffers();
@@ -293,7 +294,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
             mCount++;
         } else {
             Log.i(TAG, "inputBufferIndex fetch fail,ret = " + inputBufferIndex);
-            return false;
+            return Error.ERROR_RETRY;
         }
 
         // Get output buffer index
@@ -304,7 +305,7 @@ public class TestActivity extends Activity implements SurfaceHolder.Callback, Fr
             mCodec.releaseOutputBuffer(outputBufferIndex, true);
             outputBufferIndex = mCodec.dequeueOutputBuffer(bufferInfo, 0);
         }
-        return true;
+        return Error.ERROR_NONE;
     }
 
     public void initNet() {

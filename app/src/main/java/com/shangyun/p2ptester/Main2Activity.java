@@ -17,6 +17,7 @@ import android.widget.Button;
 
 import com.mid.lib.DemoSink;
 import com.mid.lib.DemoSource;
+import com.mid.lib.Error;
 import com.mid.lib.FrameCallback;
 import com.mid.lib.audio.AudioRecorder;
 import com.p2p.pppp_api.PPCS_APIs;
@@ -52,9 +53,10 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
     MediaCodec mCodec;
     int VIDEO_WIDTH = 640;
     int VIDEO_HEIGHT = 480;
+    MediaFormat mMediaFormat;
     private int mHandleSession = -1;
     private String mdid = "PPCS-017130-FETFS";
-    private byte mMode = 1;
+    private byte mMode = 0x7e;
     private ReceiveHandler mReceiveHandler;
     private SendHandler mSendHandler;
     private HandlerThread mReceiveThread;
@@ -68,6 +70,8 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
             Manifest.permission.RECORD_AUDIO
     };
     public static final int CODE = 0x001;
+
+    State mState;   // we are in which state ?
 
     private Handler mHandler = new Handler() {
         @Override
@@ -95,6 +99,8 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate Called");
+        mState = State.IDLE;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         requestPermission();
@@ -131,23 +137,32 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
     public void OnClick(View v){
         switch(v.getId()){
             case R.id.phone_monitor:
-                Log.i(TAG, "xxxxx");
-                btnStart.setEnabled(false);
-                btsHangup.setEnabled(true);
-                mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_JSON));
-                mRecorder.startAudioRecord();
+                mState = State.PHONE_MONITOR;
+                doPhoneMonitor();
                 break;
             case R.id.hang_up:
-                Log.i(TAG, "hang_up");
-                btnStart.setEnabled(true);
-                btsHangup.setEnabled(false);
-                mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_HANG_UP));
-                mRecorder.stopAudioRecord();
+                mState = State.HANGUP;
+                doHangup();
                 break;
         }
 
     }
 
+    private void doHangup(){
+        Log.i(TAG, "doHangup");
+        btnStart.setEnabled(true);
+        btsHangup.setEnabled(false);
+        mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_HANG_UP));
+        mRecorder.stopAudioRecord();
+    }
+
+    private void doPhoneMonitor(){
+        Log.i(TAG, "doPhoneMonitor");
+        btnStart.setEnabled(false);
+        btsHangup.setEnabled(true);
+        mSendHandler.sendMessage(mSendHandler.obtainMessage(SendHandler.MSG_SEND_JSON));
+        mRecorder.startAudioRecord();
+    }
 
     public void initNet() {
         // we do it in a thread
@@ -177,6 +192,12 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
         }).start();
     }
 
+    private void destroyNet(){
+        if(mHandleSession >= 0){
+            PPCS_APIs.PPCS_Close(mHandleSession);
+            mHandleSession = -1;
+        }
+    }
     public boolean initConnection() {
         int nRet = PPCS_APIs.PPCS_Initialize(initString.getBytes());
         st_PPCS_NetInfo NetInfo = new st_PPCS_NetInfo();
@@ -197,49 +218,58 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
 
 
     @Override
-    public boolean onFrame(byte[] buf, int offset, int length) {
+    public Error onFrame(byte[] buf, int offset, int length) {
         // Get input buffer index
         Log.i(TAG, "onFrame offset=" + offset + " length: " + length);
-        ByteBuffer[] inputBuffers = mCodec.getInputBuffers();
-        // -1 表示一直等待, 0不等待, >0 等待时间, ms为单位
-        int inputBufferIndex = mCodec.dequeueInputBuffer(-1);
+        if(mCodec == null) {
+            return Error.ERROR_FAULT;
+        }
+        try {
+            ByteBuffer[] inputBuffers = mCodec.getInputBuffers();
+            // -1 表示一直等待, 0不等待, >0 等待时间, ms为单位
+            int inputBufferIndex = mCodec.dequeueInputBuffer(-1);
 
-        if (inputBufferIndex >= 0) {
-            ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
-            // 清空buffer
-            inputBuffer.clear();
-            // 放要解码的数据
-            inputBuffer.put(buf, offset, length);
-            // 解码 presenstationTimeUs 可为0
-            mCodec.queueInputBuffer(inputBufferIndex, 0, length, 0, 0);
-            mCount++;
-        } else {
-            Log.i(TAG, "inputBufferIndex fetch fail,ret = " + inputBufferIndex);
-            return false;
+            if (inputBufferIndex >= 0) {
+                ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
+                // 清空buffer
+                inputBuffer.clear();
+                // 放要解码的数据
+                inputBuffer.put(buf, offset, length);
+                // 解码 presenstationTimeUs 可为0
+                mCodec.queueInputBuffer(inputBufferIndex, 0, length, 0, 0);
+                mCount++;
+            } else {
+                Log.i(TAG, "inputBufferIndex fetch fail,ret = " + inputBufferIndex);
+                return Error.ERROR_RETRY;
+            }
+
+            // Get output buffer index
+            MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+            int outputBufferIndex = mCodec.dequeueOutputBuffer(bufferInfo, 100);
+            while (outputBufferIndex >= 0) {
+                // render true to show frame on SF
+                mCodec.releaseOutputBuffer(outputBufferIndex, true);
+                outputBufferIndex = mCodec.dequeueOutputBuffer(bufferInfo, 0);
+            }
+        }catch (IllegalStateException e){
+            Log.e(TAG, "onFrame: " + e.getMessage());
         }
 
-        // Get output buffer index
-        MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-        int outputBufferIndex = mCodec.dequeueOutputBuffer(bufferInfo, 100);
-        while (outputBufferIndex >= 0) {
-            // render true to show frame on SF
-            mCodec.releaseOutputBuffer(outputBufferIndex, true);
-            outputBufferIndex = mCodec.dequeueOutputBuffer(bufferInfo, 0);
-        }
-        return true;
+        return Error.ERROR_NONE;
     }
 
     private void initCodec() {
-        try {
-            mCodec = MediaCodec.createDecoderByType(MIME_TYPE);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(mCodec == null){
+            try {
+                mCodec = MediaCodec.createDecoderByType(MIME_TYPE);
+            } catch (IOException e) {
+                e.printStackTrace();
+                mCodec = null;
+                return ;
+            }
+            mMediaFormat = MediaFormat.createVideoFormat(MIME_TYPE,
+                    VIDEO_WIDTH, VIDEO_HEIGHT);
         }
-        MediaFormat mediaFormat = MediaFormat.createVideoFormat(MIME_TYPE,
-                VIDEO_WIDTH, VIDEO_HEIGHT);
-        mCodec.configure(mediaFormat, h264sf.getHolder().getSurface(),
-                null, 0);
-        mCodec.start();
     }
 
     @Override
@@ -252,18 +282,67 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        Log.i(TAG, "surfaceCreated");
+        Log.i(TAG, "surfaceCreated");  // we return from resmue,
         initCodec();
+        if(mCodec != null){
+            mCodec.configure(mMediaFormat, h264sf.getHolder().getSurface(),
+                    null, 0);
+            mCodec.start();
+        }
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
+        Log.i(TAG, "surfaceChanged");  // we return from resmue,
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+        Log.i(TAG, "surfaceDestroyed");  // we return from resmue,
+        if(mCodec != null){
+            mCodec.stop();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume Called " + mState);
+        if(mState == State.PHONE_MONITOR){
+            doPhoneMonitor();
+        }
 
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "onPause Called" + mState);
+        // if we are in PHONE_MONITOR, then do hangup
+        if(mState == State.PHONE_MONITOR){
+            doHangup();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG, "onDestroy Called");
+        super.onDestroy();
+        destroyNet();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop Called");
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
+
+    private enum State {
+        IDLE, PHONE_MONITOR, HANGUP
+    }
 }
