@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -199,23 +200,66 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
         }
     }
     public boolean initConnection() {
-        int nRet = PPCS_APIs.PPCS_Initialize(initString.getBytes());
+        final int max_retry_count = 5;
+        final long maxWaitTime = 10000; // 10s at most
+        long wt = 0;
+        int rv  = 0;
+        int retry = 0;
+        Log.i(TAG, "initConnection START: ");
+        P2pApplication app = ((P2pApplication)getApplication());
+        int session = app.getmHandleSession();
+        if(session >= 0){
+            mHandleSession = session;
+        }
+        if(mHandleSession >= 0){
+            Log.i(TAG, "connection already estalished, OK");
+            return true;
+        }
+        do {
+            rv = PPCS_APIs.PPCS_Initialize(initString.getBytes());
+        }while(retry < max_retry_count && rv != PPCS_APIs.ERROR_PPCS_SUCCESSFUL);
+        if(retry >= max_retry_count){
+            Log.w(TAG, "PPCS_Initialize failed, reason= " + ErrMsg.getErrorMessage(rv));
+            return false;
+        }
+
         st_PPCS_NetInfo NetInfo = new st_PPCS_NetInfo();
-        PPCS_APIs.PPCS_NetworkDetect(NetInfo, 0);
-        mHandleSession = PPCS_APIs.PPCS_Connect(mdid, mMode, UDP_Port);
-        if (mHandleSession >= 0) {
-            Log.i(TAG, "Connect OK, session=" + mHandleSession);
-        } else {
-            if (mHandleSession == PPCS_APIs.ERROR_PPCS_USER_CONNECT_BREAK) {
-                Log.i(TAG, "Connect break is called !\n");
+        retry = 0;
+        do {
+            rv  = PPCS_APIs.PPCS_NetworkDetect(NetInfo, 0);
+        }while(retry < max_retry_count && rv != PPCS_APIs.ERROR_PPCS_SUCCESSFUL);
+        if(retry >= max_retry_count){
+            Log.w(TAG, "PPCS_NetworkDetect failed, reason= " + ErrMsg.getErrorMessage(rv));
+            return false;
+        }
+        for(retry = 0; wt < maxWaitTime; retry++){
+            mHandleSession = PPCS_APIs.PPCS_Connect(mdid, mMode, UDP_Port);
+            if (mHandleSession >= 0) {
+                app.setmHandleSession(mHandleSession);   // save it.
+                Log.i(TAG, "Connect OK, session=" + mHandleSession);
+                return true;
             } else {
-                String err = ErrMsg.getErrorMessage(mHandleSession);
-                Log.i(TAG, String.format("Connect failed(%d) : %s \n", mHandleSession, err));
+                wt = getWaitTime(retry);
+                Log.i(TAG, String.format("PPCS_Connect failed(%d) : %s , retry=%d, waitTime=%dms\n",
+                        mHandleSession, ErrMsg.getErrorMessage(mHandleSession), retry, wt));
+                try {
+                    Thread.sleep(wt);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        return mHandleSession >= 0 ? true : false;
+        return false;
     }
 
+    /**
+     *  根据传递的重试次数，用指数算法来计算出等待时间
+     * @param retry 重试次数
+     * @return 等待时间， 单位毫秒
+     */
+    public static  long getWaitTime(int retry){
+        return (long)(Math.pow(2, retry) * 100L);
+    }
 
     @Override
     public Error onFrame(byte[] buf, int offset, int length) {
@@ -228,7 +272,6 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
             ByteBuffer[] inputBuffers = mCodec.getInputBuffers();
             // -1 表示一直等待, 0不等待, >0 等待时间, ms为单位
             int inputBufferIndex = mCodec.dequeueInputBuffer(-1);
-
             if (inputBufferIndex >= 0) {
                 ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
                 // 清空buffer
@@ -253,8 +296,8 @@ public class Main2Activity extends AppCompatActivity  implements SurfaceHolder.C
             }
         }catch (IllegalStateException e){
             Log.e(TAG, "onFrame: " + e.getMessage());
+            return Error.ERROR_FAULT;
         }
-
         return Error.ERROR_NONE;
     }
 
