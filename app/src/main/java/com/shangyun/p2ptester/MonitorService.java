@@ -1,8 +1,11 @@
 package com.shangyun.p2ptester;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -36,24 +39,35 @@ public class MonitorService extends Service {
         super.onCreate();
     }
 
+    private Notification makeNotification(){
+        Notification.Builder builder = new Notification.Builder(getApplicationContext());
+        Intent intent = new Intent(this, Main2Activity.class);
+        builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, 0))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+                .setContentText("启动P2P")
+                .setContentTitle("start");
+        return builder.build();
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "Service started by me");
+
         if(mThread == null){
+            startForeground(101, makeNotification());
             int sesssion = ((P2pApplication)getApplication()).getmHandleSession();
             Log.i(TAG, "Service started any thread now ");
             mRun = new MonitorRunnable(this, (P2pApplication) getApplication());
             mThread = new Thread(mRun);
             mThread.start();
         }
-
-        // TODO: do network connection.
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy");
+        stopForeground(true);
         super.onDestroy();
     }
 
@@ -137,6 +151,7 @@ public class MonitorService extends Service {
             while(true){
                 if(doConnection()){
                     Log.i(TAG, "connection Ok, start receive data-->");
+  //                  mContext.startActivity(new Intent(mContext, Main2Activity.class));
                     while(true){
                         String out = receiveData(1);
                         if (out != null) {
@@ -177,10 +192,11 @@ public class MonitorService extends Service {
             int[] size = new int[1];
             int retry = 5;
             int ret = 0;
+            byte[] header = new byte[8];
 
             do {
-                size[0] = buffer.length;
-                ret = PPCS_APIs.PPCS_Read(mHandleSession, (byte) channel, buffer, size, 2000);
+                size[0] = header.length;
+                ret = PPCS_APIs.PPCS_Read(mHandleSession, (byte) channel, header, size, -1);
                 Log.i(TAG, "PPCS_Read, ret=" + ret + " , Error=" + ErrMsg.getErrorMessage(ret));
                 if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_TIMEOUT == ret ||
                         PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_REMOTE == ret ||
@@ -195,8 +211,8 @@ public class MonitorService extends Service {
                     break;
                 }
             }while(ret == PPCS_APIs.ERROR_PPCS_TIME_OUT );
-            if (rsize > 8 && (buffer[0] == 35 && buffer[1] == 35)) {  // json data begin with ##xxxx$$
-                TotalSize = DataUtil.byte4int(Arrays.copyOfRange(buffer, 2, 6));
+            if (rsize >= 8 && (header[0] == 35 && header[1] == 35)) {  // json data begin with ##xxxx$$
+                TotalSize = DataUtil.byte4int(Arrays.copyOfRange(header, 2, 6));
                 currenSize = 0;
                 data = new byte[TotalSize];
             } else {
@@ -205,7 +221,7 @@ public class MonitorService extends Service {
             }
             left = TotalSize - (rsize - 8);
             if (left <= 0) {
-                System.arraycopy(buffer, 8, data, 0, TotalSize);
+                System.arraycopy(header, 8, data, 0, TotalSize);
             }
 
             while (left > 0) {

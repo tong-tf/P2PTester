@@ -41,7 +41,9 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <service android:name=".MonitorService"/>
+        <service android:name=".MonitorService"
+            android:priority="1000"
+            />
     </application>
 
 </manifest>
