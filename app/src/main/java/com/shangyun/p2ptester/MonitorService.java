@@ -159,14 +159,20 @@ public class MonitorService extends Service {
                             try {
                                 JSONObject js = new JSONObject(out);
                                 String operation = js.getString("operation");
-                                if(operation != null && operation.contains("call")){
-                                    mContext.startActivity(new Intent(mContext, Main2Activity.class));
+                                if(operation != null && operation.contains("door call")){
+                                    Intent intent = new Intent(mContext, Main2Activity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    mContext.startActivity(intent);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }else{
                             // meaning connection fail
+                            st_PPCS_Session sInfo = new st_PPCS_Session();
+                            if(PPCS_APIs.PPCS_Check(mHandleSession, sInfo) == PPCS_APIs.ERROR_PPCS_SUCCESSFUL){
+                                continue;
+                            }
                             closeSession();
                             break;
                         }
@@ -186,7 +192,7 @@ public class MonitorService extends Service {
             int currenSize = 0;  //
             int left = 0;
             int rsize = 0;
-            int timeout_ms = 200;
+            int timeout_ms = 2000;
             byte[] data;
             byte[] buffer = new byte[1024];
             int[] size = new int[1];
@@ -196,7 +202,7 @@ public class MonitorService extends Service {
 
             do {
                 size[0] = header.length;
-                ret = PPCS_APIs.PPCS_Read(mHandleSession, (byte) channel, header, size, -1);
+                ret = PPCS_APIs.PPCS_Read(mHandleSession, (byte) channel, header, size, timeout_ms);
                 Log.i(TAG, "PPCS_Read, ret=" + ret + " , Error=" + ErrMsg.getErrorMessage(ret));
                 if (PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_TIMEOUT == ret ||
                         PPCS_APIs.ERROR_PPCS_SESSION_CLOSED_REMOTE == ret ||
