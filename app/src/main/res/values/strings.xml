@@ -11,4 +11,7 @@
     <string name="start_record">Start Record</string>
     <string name="stop_record">Stop Record</string>
     <string name="play_aac">play AAC</string>
+    <string name="accept">接收</string>
+    <string name="cancel">取消</string>
+    <string name="outside_call_info">办公室外: \n %1$s来电</string>
 </resources>

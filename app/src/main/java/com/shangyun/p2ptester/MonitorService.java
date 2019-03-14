@@ -159,8 +159,11 @@ public class MonitorService extends Service {
                             try {
                                 JSONObject js = new JSONObject(out);
                                 String operation = js.getString("operation");
+                                String key = js.getString("key");
                                 if(operation != null && operation.contains("door call")){
-                                    Intent intent = new Intent(mContext, Main2Activity.class);
+                                    Intent intent = new Intent(mContext, ActivityDoor.class);
+                                    intent.putExtra("peer_key", key);
+                                    intent.putExtra("handle", mHandleSession);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     mContext.startActivity(intent);
                                 }
