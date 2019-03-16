@@ -14,4 +14,11 @@
     <string name="accept">接收</string>
     <string name="cancel">取消</string>
     <string name="outside_call_info">办公室外: \n %1$s来电</string>
+    <string name="video_recorder">摄像机</string>
+    <string name="photo">照片</string>
+    <string name="tape">录相</string>
+    <string name="about">关于</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
