@@ -1,5 +1,6 @@
 package com.shangyun.p2ptester;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -39,5 +40,8 @@ public class Main3Activity extends AppCompatActivity {
         mFragmentList.add(new PhotoFragment());
         mFragmentList.add(new RecordFragment());
         mTabWidget.init(getSupportFragmentManager(), mFragmentList);
+
+        Intent intent = new Intent(Main3Activity.this, MonitorService.class);
+        startService(intent);
     }
 }
